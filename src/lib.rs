@@ -6,22 +6,40 @@ use std::path::{Path, PathBuf};
 use proc_macro2::{Ident, TokenStream, TokenTree};
 use quote::quote;
 use rust_format::{Formatter, RustFmt};
-use syn::{Attribute, Item, ItemEnum, ItemStruct};
+use syn::{Attribute, Item, ItemStruct};
+
+use crate::sculpt_set::{generate_callback_trait, SculptSet};
 
 const OPTIONS: &str = "Options";
 
-mod dependency_tree;
 mod type_link;
+mod sculpt_set;
+
+pub fn build2(path: PathBuf, root_dir: &Path, out_dir: &Path) {
+    let source = root_dir.join(&path);
+    let destination = out_dir.join(&path);
+    let ast = to_ast(&source);
+    if let Some(tokens) = SculptSet::new(ast.items)
+        .map(generate)
+        .map(|ts| ts.into_iter()
+            .reduce(|t1, t2| quote!(#t1 #t2)).unwrap()) {
+        write_token_stream_to_file(tokens, destination)
+    }
+}
+
+fn generate(sculpt_set: SculptSet) -> Vec<TokenStream> {
+    vec![
+        generate_callback_trait(&sculpt_set)
+    ]
+}
 
 pub fn build(path: PathBuf, root_dir: &Path, out_dir: &Path) {
     let source = root_dir.join(&path);
     let destination = out_dir.join(&path);
     let ast = to_ast(&source);
-    let dt = dependency_tree::to_dependency_tree(ast.clone());
-    let dt_tokens = match dt.generate() {
-        Ok(tokens) => tokens,
-        Err(err) => panic!("Error while building sculptor traits \"{}\" for file {:?}.", err, &source)
-    };
+    let dt_tokens = SculptSet::new(ast.items.clone())
+        .map(|set| generate_callback_trait(&set))
+        .unwrap_or(quote!());
     let tl_tokens = type_link::to_type_linker(ast).extrapolate();
     let tokens = quote! {
                 #dt_tokens
@@ -49,15 +67,6 @@ fn to_ast(path: &PathBuf) -> syn::File {
         .expect(&format!("Cannot read contents. {:?}", path));
     let file = syn::parse_file(&content).expect(&format!("Cannot parse file. {:?}", path));
     file
-}
-
-fn is_item_enum_picker(item_enum: &ItemEnum) -> bool {
-    for attr in &item_enum.attrs {
-        if attribute_is_derive(attr, "Picker") {
-            return true;
-        }
-    }
-    false
 }
 
 fn is_item_struct_root(item_struct: &ItemStruct) -> bool {
@@ -91,8 +100,6 @@ fn attribute_is_derive(attr: &Attribute, derived: &str) -> bool {
         false
     }
 }
-
-
 
 fn item_to_ident(item: &Item) -> Option<Ident> {
     match item {
