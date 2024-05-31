@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 
 use itertools::Itertools;
-use proc_macro2::Ident;
+use proc_macro2::{Ident, TokenStream};
+use quote::quote;
 use syn::{Field, Item, ItemEnum, ItemStruct, Type, Variant};
-
-pub use callback_trait::generate_callback_trait;
+use crate::sculpt_set::callback_trait::generate_callback_trait;
+use crate::sculpt_set::picker_traits::generate_picker_traits;
 
 mod callback_trait;
+mod picker_traits;
 
 pub struct SculptSet {
     root: ItemStruct,
@@ -45,6 +47,16 @@ impl SculptSet {
                 _ => None
             })
             .collect()
+    }
+
+    pub fn compile(self) -> TokenStream {
+        [
+            generate_callback_trait,
+            generate_picker_traits
+        ].iter()
+            .map(|f| f(&self))
+            .reduce(|t1, t2| quote!(#t1 #t2))
+            .unwrap()
     }
 }
 

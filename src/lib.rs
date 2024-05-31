@@ -8,37 +8,19 @@ use quote::quote;
 use rust_format::{Formatter, RustFmt};
 use syn::{Attribute, Item, ItemStruct};
 
-use crate::sculpt_set::{generate_callback_trait, SculptSet};
+use crate::sculpt_set::SculptSet;
 
 const OPTIONS: &str = "Options";
 
 mod type_link;
 mod sculpt_set;
 
-pub fn build2(path: PathBuf, root_dir: &Path, out_dir: &Path) {
-    let source = root_dir.join(&path);
-    let destination = out_dir.join(&path);
-    let ast = to_ast(&source);
-    if let Some(tokens) = SculptSet::new(ast.items)
-        .map(generate)
-        .map(|ts| ts.into_iter()
-            .reduce(|t1, t2| quote!(#t1 #t2)).unwrap()) {
-        write_token_stream_to_file(tokens, destination)
-    }
-}
-
-fn generate(sculpt_set: SculptSet) -> Vec<TokenStream> {
-    vec![
-        generate_callback_trait(&sculpt_set)
-    ]
-}
-
 pub fn build(path: PathBuf, root_dir: &Path, out_dir: &Path) {
     let source = root_dir.join(&path);
     let destination = out_dir.join(&path);
     let ast = to_ast(&source);
     let dt_tokens = SculptSet::new(ast.items.clone())
-        .map(|set| generate_callback_trait(&set))
+        .map(|set| set.compile())
         .unwrap_or(quote!());
     let tl_tokens = type_link::to_type_linker(ast).extrapolate();
     let tokens = quote! {
