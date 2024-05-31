@@ -3,10 +3,10 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-use proc_macro2::{Ident, TokenStream, TokenTree};
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use rust_format::{Formatter, RustFmt};
-use syn::{Attribute, Item, ItemStruct};
+use syn::{Item, ItemStruct};
 
 use crate::sculpt_set::SculptSet;
 
@@ -53,34 +53,11 @@ fn to_ast(path: &PathBuf) -> syn::File {
 
 fn is_item_struct_root(item_struct: &ItemStruct) -> bool {
     for attr in &item_struct.attrs {
-        if attribute_is_derive(attr, "Sculptor") {
-            return true;
+        if attr.path().is_ident("sculpt") {
+            return true
         }
     }
     false
-}
-
-fn attribute_is_derive(attr: &Attribute, derived: &str) -> bool {
-    if attr.path().is_ident("derive") {
-        match attr.meta.require_list() {
-            Ok(meta_list) => {
-                for tree in meta_list.clone().tokens {
-                    match tree {
-                        TokenTree::Ident(ident) => {
-                            if ident == derived {
-                                return true;
-                            }
-                        }
-                        _ => continue
-                    }
-                }
-                false
-            }
-            Err(_) => false
-        }
-    } else {
-        false
-    }
 }
 
 fn item_to_ident(item: &Item) -> Option<Ident> {
