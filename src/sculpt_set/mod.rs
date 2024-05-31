@@ -7,10 +7,12 @@ use syn::{Field, Item, ItemEnum, ItemStruct, Type, Variant};
 use crate::sculpt_set::callback_trait::generate_callback_trait;
 use crate::sculpt_set::options_enums::generate_options_enums;
 use crate::sculpt_set::picker_traits::generate_picker_traits;
+use crate::sculpt_set::variant_builders::generate_variant_builders;
 
 mod callback_trait;
 mod picker_traits;
 mod options_enums;
+mod variant_builders;
 
 pub struct SculptSet {
     root: ItemStruct,
@@ -55,7 +57,8 @@ impl SculptSet {
         [
             generate_callback_trait,
             generate_picker_traits,
-            generate_options_enums
+            generate_options_enums,
+            generate_variant_builders
         ].iter()
             .map(|f| f(&self))
             .reduce(|t1, t2| quote!(#t1 #t2))
