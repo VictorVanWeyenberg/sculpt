@@ -4,6 +4,14 @@ use syn::{Field, Item, Type};
 
 use crate::OPTIONS;
 
+use sculpt_set::SculptSet;
+use crate::generate::callback_trait::generate_callback_trait;
+use crate::generate::options_enums::generate_options_enums;
+use crate::generate::pickable_builders::generate_pickable_builders;
+use crate::generate::picker_traits::generate_picker_traits;
+use crate::generate::struct_builders::generate_struct_builders;
+use crate::generate::variant_builders::generate_variant_builders;
+
 mod sculpt_set;
 mod callback_trait;
 mod picker_traits;
@@ -12,7 +20,23 @@ mod variant_builders;
 mod pickable_builders;
 mod struct_builders;
 
-pub use sculpt_set::SculptSet;
+pub fn generate(items: Vec<Item>) -> Result<TokenStream, String> {
+    SculptSet::new(items).map(generate_tokens)
+}
+
+fn generate_tokens(sculpt_set: SculptSet) -> TokenStream {
+    [
+        generate_callback_trait,
+        generate_picker_traits,
+        generate_options_enums,
+        generate_variant_builders,
+        generate_pickable_builders,
+        generate_struct_builders
+    ].iter()
+        .map(|f| f(&sculpt_set))
+        .reduce(|t1, t2| quote!(#t1 #t2))
+        .unwrap()
+}
 
 fn generate_builder_field(sculpt_set: &SculptSet, field: &Field) -> TokenStream {
     let field_type_ident = get_type_ident_for_field(field);

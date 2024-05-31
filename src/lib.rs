@@ -7,7 +7,8 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use rust_format::{Formatter, RustFmt};
 use syn::{Item, ItemStruct};
-use crate::generate::SculptSet;
+
+use crate::generate::generate;
 
 const OPTIONS: &str = "Options";
 
@@ -17,16 +18,13 @@ mod generate;
 pub fn build(path: PathBuf, root_dir: &Path, out_dir: &Path) {
     let source = root_dir.join(&path);
     let destination = out_dir.join(&path);
-    let ast = to_ast(&source);
-    let dt_tokens = SculptSet::new(ast.items.clone())
-        .map(|set| set.compile())
-        .unwrap_or(quote!());
+    let ast = to_ast(source);
+    let dt_tokens = generate(ast.items.clone()).unwrap_or(quote! {});
     let tl_tokens = type_link::to_type_linker(ast).extrapolate();
     let tokens = quote! {
-                #dt_tokens
-
-                #(#tl_tokens )*
-            };
+        #dt_tokens
+        #(#tl_tokens )*
+    };
     write_token_stream_to_file(tokens, destination);
 }
 
@@ -41,7 +39,7 @@ fn write_token_stream_to_file(tokens: TokenStream, path: PathBuf) {
     }
 }
 
-fn to_ast(path: &PathBuf) -> syn::File {
+fn to_ast(path: PathBuf) -> syn::File {
     let mut file = File::open(&path).expect(&format!("Cannot open file. {:?}", path));
     let mut content = String::new();
     file.read_to_string(&mut content)
