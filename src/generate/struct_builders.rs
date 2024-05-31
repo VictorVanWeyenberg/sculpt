@@ -2,7 +2,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Field, ItemStruct};
 
-use crate::sculpt_set::{field_to_builder_call, generate_builder_field, get_field_ident_for_field, get_type_ident_for_field, is_field_sculptable, SculptSet};
+use crate::generate::{field_to_builder_call, generate_builder_field, get_field_ident_for_field, get_type_ident_for_field, is_field_sculptable, SculptSet};
 
 pub fn generate_struct_builders(sculpt_set: &SculptSet) -> TokenStream {
     let root_builder = generate_root_builder(sculpt_set);

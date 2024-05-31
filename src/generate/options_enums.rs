@@ -2,7 +2,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{ItemEnum, Variant};
 use crate::OPTIONS;
-use crate::sculpt_set::SculptSet;
+use crate::generate::SculptSet;
 
 pub fn generate_options_enums(sculpt_set: &SculptSet) -> TokenStream {
     sculpt_set.get_all_enums().into_iter()

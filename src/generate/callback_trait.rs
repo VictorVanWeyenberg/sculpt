@@ -1,7 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::ItemEnum;
-use crate::sculpt_set::SculptSet;
+
+use crate::generate::SculptSet;
 
 pub fn generate_callback_trait(sculpt_set: &SculptSet) -> TokenStream {
     let root_builder_callbacks = format_ident!("{}BuilderCallbacks", sculpt_set.root.ident);

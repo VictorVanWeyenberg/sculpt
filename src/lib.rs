@@ -7,13 +7,12 @@ use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use rust_format::{Formatter, RustFmt};
 use syn::{Item, ItemStruct};
-
-use crate::sculpt_set::SculptSet;
+use crate::generate::SculptSet;
 
 const OPTIONS: &str = "Options";
 
 mod type_link;
-mod sculpt_set;
+mod generate;
 
 pub fn build(path: PathBuf, root_dir: &Path, out_dir: &Path) {
     let source = root_dir.join(&path);

@@ -2,7 +2,7 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Fields, ItemEnum, Variant};
 
-use crate::sculpt_set::{field_to_builder_call, generate_builder_field, get_field_ident_for_field, SculptSet};
+use crate::generate::{field_to_builder_call, generate_builder_field, get_field_ident_for_field, SculptSet};
 
 pub fn generate_variant_builders(sculpt_set: &SculptSet) -> TokenStream {
     sculpt_set.get_all_enums().into_iter()
