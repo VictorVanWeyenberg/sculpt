@@ -3,10 +3,9 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 use rust_format::{Formatter, RustFmt};
-use syn::Item;
 
 use crate::generate::generate;
 
@@ -38,12 +37,4 @@ fn to_ast(path: PathBuf) -> syn::File {
         .expect(&format!("Cannot read contents. {:?}", path));
     let file = syn::parse_file(&content).expect(&format!("Cannot parse file. {:?}", path));
     file
-}
-
-fn item_to_ident(item: &Item) -> Option<Ident> {
-    match item {
-        Item::Struct(item_struct) => Some(item_struct.ident.clone()),
-        Item::Enum(item_enum) => Some(item_enum.ident.clone()),
-        _ => None
-    }
 }
