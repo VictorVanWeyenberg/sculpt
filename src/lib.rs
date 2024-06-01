@@ -15,7 +15,8 @@ pub fn build(path: PathBuf, root_dir: &Path, out_dir: &Path) {
     let source = root_dir.join(&path);
     let destination = out_dir.join(&path);
     let ast = to_ast(source);
-    let tokens = generate(ast.items.clone()).unwrap_or(quote! {});
+    let tokens = generate(ast.items.clone())
+        .unwrap_or_else(|err| quote!(compile_error!(#err);));
     write_token_stream_to_file(tokens, destination);
 }
 
