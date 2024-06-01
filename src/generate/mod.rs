@@ -2,13 +2,14 @@ use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{Field, Item, Type};
 
-use crate::OPTIONS;
+const OPTIONS: &str = "Options";
 
 use sculpt_set::SculptSet;
 use crate::generate::callback_trait::generate_callback_trait;
 use crate::generate::options_enums::generate_options_enums;
 use crate::generate::pickable_builders::generate_pickable_builders;
 use crate::generate::picker_traits::generate_picker_traits;
+use crate::generate::root_builder_picker_impls::generate_root_builder_picker_impls;
 use crate::generate::struct_builders::generate_struct_builders;
 use crate::generate::variant_builders::generate_variant_builders;
 
@@ -19,6 +20,7 @@ mod options_enums;
 mod variant_builders;
 mod pickable_builders;
 mod struct_builders;
+mod root_builder_picker_impls;
 
 pub fn generate(items: Vec<Item>) -> Result<TokenStream, String> {
     SculptSet::new(items).map(generate_tokens)
@@ -31,7 +33,8 @@ fn generate_tokens(sculpt_set: SculptSet) -> TokenStream {
         generate_options_enums,
         generate_variant_builders,
         generate_pickable_builders,
-        generate_struct_builders
+        generate_struct_builders,
+        generate_root_builder_picker_impls
     ].iter()
         .map(|f| f(&sculpt_set))
         .reduce(|t1, t2| quote!(#t1 #t2))

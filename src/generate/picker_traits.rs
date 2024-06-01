@@ -1,8 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::ItemEnum;
-use crate::OPTIONS;
-use crate::generate::SculptSet;
+
+use crate::generate::{OPTIONS, SculptSet};
 
 pub fn generate_picker_traits(sculpt_set: &SculptSet) -> TokenStream {
     sculpt_set.get_all_enums().into_iter()

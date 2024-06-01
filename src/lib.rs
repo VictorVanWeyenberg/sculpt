@@ -6,25 +6,17 @@ use std::path::{Path, PathBuf};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use rust_format::{Formatter, RustFmt};
-use syn::{Item, ItemStruct};
+use syn::Item;
 
 use crate::generate::generate;
 
-const OPTIONS: &str = "Options";
-
-mod type_link;
 mod generate;
 
 pub fn build(path: PathBuf, root_dir: &Path, out_dir: &Path) {
     let source = root_dir.join(&path);
     let destination = out_dir.join(&path);
     let ast = to_ast(source);
-    let dt_tokens = generate(ast.items.clone()).unwrap_or(quote! {});
-    let tl_tokens = type_link::to_type_linker(ast).extrapolate();
-    let tokens = quote! {
-        #dt_tokens
-        #(#tl_tokens )*
-    };
+    let tokens = generate(ast.items.clone()).unwrap_or(quote! {});
     write_token_stream_to_file(tokens, destination);
 }
 
@@ -46,15 +38,6 @@ fn to_ast(path: PathBuf) -> syn::File {
         .expect(&format!("Cannot read contents. {:?}", path));
     let file = syn::parse_file(&content).expect(&format!("Cannot parse file. {:?}", path));
     file
-}
-
-fn is_item_struct_root(item_struct: &ItemStruct) -> bool {
-    for attr in &item_struct.attrs {
-        if attr.path().is_ident("sculpt") {
-            return true
-        }
-    }
-    false
 }
 
 fn item_to_ident(item: &Item) -> Option<Ident> {
