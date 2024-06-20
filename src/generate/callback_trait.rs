@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::ItemEnum;
@@ -7,6 +8,7 @@ use crate::generate::SculptSet;
 pub fn generate_callback_trait(sculpt_set: &SculptSet) -> TokenStream {
     let root_builder_callbacks = format_ident!("{}BuilderCallbacks", sculpt_set.root.ident);
     let pick_methods = sculpt_set.get_all_enums().into_iter()
+        .unique()
         .map(generate_pick_method)
         .collect::<Vec<TokenStream>>();
     quote! {

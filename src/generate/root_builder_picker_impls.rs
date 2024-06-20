@@ -6,7 +6,7 @@ use crate::generate::{get_field_ident_for_field, get_type_ident_for_field, OPTIO
 use crate::generate::sculpt_set::{FieldOrVariant, SculptSet};
 
 pub fn generate_root_builder_picker_impls(sculpt_set: &SculptSet) -> TokenStream {
-    sculpt_set.type_links.iter()
+    sculpt_set.type_links().iter()
         .filter_map(|(field, item)| match item {
             Item::Enum(item_enum) => Some((field, item_enum)),
             _ => None
@@ -16,7 +16,7 @@ pub fn generate_root_builder_picker_impls(sculpt_set: &SculptSet) -> TokenStream
                 sculpt_set,
                 field,
                 item_enum,
-                sculpt_set.routes.get(field).unwrap()
+                sculpt_set.routes().get(field).unwrap()
             )
         })
         .reduce(|t1, t2| quote!(#t1 #t2))
@@ -56,7 +56,7 @@ fn generate_fulfill_method(sculpt_set: &SculptSet,
 }
 
 fn generate_set_path(sculpt_set: &SculptSet, field: &Field, route: &Vec<FieldOrVariant>) -> TokenStream {
-    let sculptable = match sculpt_set.type_links.get(field).unwrap() {
+    let sculptable = match sculpt_set.type_links().get(field).unwrap() {
         Item::Enum(item_enum) => item_enum.variants.iter()
             .any(|variant| !variant.fields.is_empty()),
         Item::Struct(_) => true,
@@ -80,7 +80,7 @@ fn generate_match_arms(sculpt_set: &SculptSet, item_enum: &ItemEnum) -> Vec<Toke
     item_enum.variants.iter()
         .map(|variant| {
             let variant_ident = &variant.ident;
-            let next_enum = sculpt_set.nexts.get(variant).unwrap().as_ref()
+            let next_enum = sculpt_set.nexts().get(variant).unwrap().as_ref()
                 .map(|item| find_next_enum_from(sculpt_set, item))
                 .unwrap_or(None);
             if let Some(item) = next_enum {
@@ -97,7 +97,7 @@ fn find_next_enum_from(sculpt_set: &SculptSet, item: &Item) -> Option<ItemEnum> 
     match item {
         Item::Enum(item_enum) => Some(item_enum.clone()),
         Item::Struct(item_struct) => item_struct.fields.iter()
-            .find_map(|field| find_next_enum_from(sculpt_set, sculpt_set.type_links.get(field).unwrap())),
+            .find_map(|field| find_next_enum_from(sculpt_set, sculpt_set.type_links().get(field).unwrap())),
         _ => None
     }
 }

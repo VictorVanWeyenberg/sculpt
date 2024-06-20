@@ -65,7 +65,7 @@ fn generate_root_builder_impl(sculpt_set: &SculptSet) -> TokenStream {
 }
 
 fn get_first_field_pick_method(sculpt_set: &SculptSet) -> TokenStream {
-    let method = format_ident!("pick_{}", sculpt_set.first.ident.to_string().to_lowercase());
+    let method = format_ident!("pick_{}", sculpt_set.first().unwrap().ident.to_string().to_lowercase());
     quote! { #method }
 }
 

@@ -14,6 +14,7 @@ use crate::generate::struct_builders::generate_struct_builders;
 use crate::generate::variant_builders::generate_variant_builders;
 
 mod sculpt_set;
+mod sculpt_tree;
 mod callback_trait;
 mod picker_traits;
 mod options_enums;
@@ -59,7 +60,7 @@ fn generate_builder_field(sculpt_set: &SculptSet, field: &Field) -> TokenStream 
 }
 
 fn is_field_sculptable(sculpt_set: &SculptSet, field: &Field) -> bool {
-    match sculpt_set.type_links.get(field).unwrap() {
+    match sculpt_set.type_links().get(field).unwrap() {
         Item::Struct(_) => true,
         Item::Enum(item_enum) => item_enum.variants.iter()
             .any(|variant| !variant.fields.is_empty()),
